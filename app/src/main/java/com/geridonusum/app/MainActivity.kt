@@ -3,45 +3,38 @@ package com.geridonusum.app
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.geridonusum.app.ui.theme.GeriDonusumAppTheme
+import com.geridonusum.app.ui.AuthScreen
+import com.geridonusum.app.ui.HomeScreen
+import com.google.firebase.auth.FirebaseAuth
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContent {
-            GeriDonusumAppTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+            MaterialTheme {
+                Surface(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
+                    var loggedIn by remember {
+                        mutableStateOf(FirebaseAuth.getInstance().currentUser != null)
+                    }
+                    if (loggedIn) {
+                        HomeScreen(onLogout = {
+                            FirebaseAuth.getInstance().signOut()
+                            loggedIn = false
+                        })
+                    } else {
+                        AuthScreen(onLoggedIn = { loggedIn = true })
+                    }
                 }
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    GeriDonusumAppTheme {
-        Greeting("Android")
     }
 }
