@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "223023955494",
+    "project_id": "geri-donusum-app-6a94b",
+    "storage_bucket": "geri-donusum-app-6a94b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:223023955494:android:469df307fd8b2657b470e7",
+        "android_client_info": {
+          "package_name": "com.geridonusum.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD3F8a64-krs5dPBgw-ONGq80mOUnjAts8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
