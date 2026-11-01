@@ -10,6 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,7 +29,11 @@ import org.osmdroid.views.overlay.Marker
 import java.io.File
 
 @Composable
-fun MapScreen(bins: List<RecyclingBin>, onLogout: () -> Unit) {
+fun MapScreen(
+    bins: List<RecyclingBin>,
+    errorMessage: String?,
+    onLogout: () -> Unit
+) {
     val context = LocalContext.current
 
     val mapView = remember {
@@ -41,14 +46,17 @@ fun MapScreen(bins: List<RecyclingBin>, onLogout: () -> Unit) {
         MapView(context).apply {
             setTileSource(TileSourceFactory.MAPNIK)
             setMultiTouchControls(true)
-            val first = bins.firstOrNull()
-            if (first != null) {
-                controller.setZoom(13.0)
-                controller.setCenter(GeoPoint(first.latitude, first.longitude))
-            } else {
-                controller.setZoom(6.0)
-                controller.setCenter(GeoPoint(39.0, 35.0))
-            }
+            controller.setZoom(6.0)
+            controller.setCenter(GeoPoint(39.0, 35.0))
+        }
+    }
+
+    // İlk kutu geldiğinde haritayı oraya götür
+    LaunchedEffect(bins.firstOrNull()?.id) {
+        val first = bins.firstOrNull()
+        if (first != null) {
+            mapView.controller.setZoom(13.0)
+            mapView.controller.setCenter(GeoPoint(first.latitude, first.longitude))
         }
     }
 
@@ -84,6 +92,14 @@ fun MapScreen(bins: List<RecyclingBin>, onLogout: () -> Unit) {
             TextButton(onClick = onLogout) {
                 Text("Çıkış")
             }
+        }
+
+        if (errorMessage != null) {
+            Text(
+                text = errorMessage,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+            )
         }
 
         AndroidView(
