@@ -70,7 +70,7 @@ fun BinDetailCard(bin: RecyclingBin, onClose: () -> Unit) {
                 recycleIsError = false
                 code = ""
             } else {
-                recycleInfo = "Kaydedilemedi. Kodu kontrol et, son kayıttan 30 saniye geçtiğinden ve kutunun bu atığı kabul ettiğinden emol."
+                recycleInfo = "Kaydedilemedi. Kodu kontrol et, son kayıttan 30 saniye geçtiğinden ve kutunun bu atığı kabul ettiğinden emin ol."
                 recycleIsError = true
             }
         }
