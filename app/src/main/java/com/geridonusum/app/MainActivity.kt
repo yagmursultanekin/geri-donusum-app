@@ -12,8 +12,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import com.geridonusum.app.data.SampleBins
 import com.geridonusum.app.ui.AuthScreen
-import com.geridonusum.app.ui.HomeScreen
+import com.geridonusum.app.ui.MapScreen
 import com.google.firebase.auth.FirebaseAuth
 
 class MainActivity : ComponentActivity() {
@@ -26,10 +27,13 @@ class MainActivity : ComponentActivity() {
                         mutableStateOf(FirebaseAuth.getInstance().currentUser != null)
                     }
                     if (loggedIn) {
-                        HomeScreen(onLogout = {
-                            FirebaseAuth.getInstance().signOut()
-                            loggedIn = false
-                        })
+                        MapScreen(
+                            bins = SampleBins.list,
+                            onLogout = {
+                                FirebaseAuth.getInstance().signOut()
+                                loggedIn = false
+                            }
+                        )
                     } else {
                         AuthScreen(onLoggedIn = { loggedIn = true })
                     }
