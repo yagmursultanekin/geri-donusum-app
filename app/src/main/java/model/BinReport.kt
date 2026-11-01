@@ -10,7 +10,9 @@ data class BinReport(
     val id: String = "",
     val binId: String = "",
     val userId: String = "",
+    val nickname: String = "",
     val type: ReportType = ReportType.ONERI,
     val message: String = "",
+    val fillLevel: FillLevel? = null,
     val createdAt: Long = System.currentTimeMillis()
 )

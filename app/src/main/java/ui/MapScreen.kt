@@ -11,7 +11,10 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -35,6 +38,8 @@ fun MapScreen(
     onLogout: () -> Unit
 ) {
     val context = LocalContext.current
+    var selectedBinId by remember { mutableStateOf<String?>(null) }
+    val selectedBin = bins.firstOrNull { it.id == selectedBinId }
 
     val mapView = remember {
         // Harita sunucusuna uygulamayı tanıtır, önbelleği uygulamanın kendi klasöründe tutar
@@ -114,13 +119,21 @@ fun MapScreen(
                     marker.position = GeoPoint(bin.latitude, bin.longitude)
                     marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
                     marker.title = bin.name
-                    marker.snippet = "Doluluk: ${bin.fillLevel.displayName}\n" +
-                            "Hasar: ${if (bin.damaged) "Var" else "Yok"}\n" +
-                            "Kabul: ${bin.acceptedTypes.joinToString { it.displayName }}"
+                    marker.setOnMarkerClickListener { _, _ ->
+                        selectedBinId = bin.id
+                        true
+                    }
                     view.overlays.add(marker)
                 }
                 view.invalidate()
             }
         )
+
+        if (selectedBin != null) {
+            BinDetailCard(
+                bin = selectedBin,
+                onClose = { selectedBinId = null }
+            )
+        }
     }
 }
