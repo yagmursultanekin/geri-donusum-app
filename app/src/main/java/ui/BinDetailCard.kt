@@ -24,20 +24,57 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.geridonusum.app.data.RecyclingRepository
 import com.geridonusum.app.data.ReportRepository
 import com.geridonusum.app.model.BinReport
 import com.geridonusum.app.model.FillLevel
 import com.geridonusum.app.model.RecyclingBin
 import com.geridonusum.app.model.ReportType
+import com.geridonusum.app.model.WasteType
 
 @Composable
 fun BinDetailCard(bin: RecyclingBin, onClose: () -> Unit) {
+    // Geri dönüşüm kaydı
+    var wasteType by remember(bin.id) { mutableStateOf<WasteType?>(bin.acceptedTypes.firstOrNull()) }
+    var code by remember(bin.id) { mutableStateOf("") }
+    var recycling by remember(bin.id) { mutableStateOf(false) }
+    var recycleInfo by remember(bin.id) { mutableStateOf<String?>(null) }
+    var recycleIsError by remember(bin.id) { mutableStateOf(false) }
+
+    // Bildirim
     var type by remember(bin.id) { mutableStateOf(ReportType.DOLULUK) }
     var fill by remember(bin.id) { mutableStateOf(FillLevel.DOLU) }
     var message by remember(bin.id) { mutableStateOf("") }
     var sending by remember(bin.id) { mutableStateOf(false) }
     var info by remember(bin.id) { mutableStateOf<String?>(null) }
     var infoIsError by remember(bin.id) { mutableStateOf(false) }
+
+    fun recycle() {
+        val selected = wasteType
+        if (selected == null) {
+            recycleInfo = "Bir atık türü seç."
+            recycleIsError = true
+            return
+        }
+        if (code.isBlank()) {
+            recycleInfo = "Kutu kodunu gir."
+            recycleIsError = true
+            return
+        }
+        recycling = true
+        recycleInfo = null
+        RecyclingRepository.recycle(bin.id, selected, code) { ok ->
+            recycling = false
+            if (ok) {
+                recycleInfo = "Tebrikler! +${selected.points} puan kazandın."
+                recycleIsError = false
+                code = ""
+            } else {
+                recycleInfo = "Kaydedilemedi. Kodu kontrol et, son kayıttan 30 saniye geçtiğinden ve kutunun bu atığı kabul ettiğinden emol."
+                recycleIsError = true
+            }
+        }
+    }
 
     fun send() {
         val text = message.trim()
@@ -70,7 +107,7 @@ fun BinDetailCard(bin: RecyclingBin, onClose: () -> Unit) {
     Card(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
         Column(
             modifier = Modifier
-                .heightIn(max = 340.dp)
+                .heightIn(max = 420.dp)
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp)
@@ -87,10 +124,44 @@ fun BinDetailCard(bin: RecyclingBin, onClose: () -> Unit) {
             Text("Hasar: ${if (bin.damaged) "Var" else "Yok"}")
             Text("Kabul: ${bin.acceptedTypes.joinToString { it.displayName }}")
 
+            // --- Geri dönüşüm yaptım ---
+            Text(
+                text = "Geri dönüşüm yaptım",
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.padding(top = 12.dp)
+            )
+            bin.acceptedTypes.forEach { option ->
+                OptionRow("${option.displayName} (+${option.points} puan)", wasteType == option) {
+                    wasteType = option
+                }
+            }
+            OutlinedTextField(
+                value = code,
+                onValueChange = { if (it.length <= 30) code = it },
+                label = { Text("Kutu kodu") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+            recycleInfo?.let {
+                Text(
+                    text = it,
+                    color = if (recycleIsError) MaterialTheme.colorScheme.error
+                    else MaterialTheme.colorScheme.primary
+                )
+            }
+            Button(
+                onClick = { recycle() },
+                enabled = !recycling,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(if (recycling) "Kaydediliyor..." else "Puanı kaydet")
+            }
+
+            // --- Bildirim gönder ---
             Text(
                 text = "Bildirim gönder",
                 style = MaterialTheme.typography.titleSmall,
-                modifier = Modifier.padding(top = 8.dp)
+                modifier = Modifier.padding(top = 16.dp)
             )
             ReportType.entries.forEach { option ->
                 OptionRow(option.displayName, type == option) { type = option }
